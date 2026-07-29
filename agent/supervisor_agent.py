@@ -17,10 +17,27 @@ import uuid
 from datetime import datetime
 from typing import Any, Optional
 
-from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
+
+# Agent executor with broad version compatibility
+try:
+    from langchain.agents import AgentExecutor
+except ImportError:
+    from langchain.agents.agent import AgentExecutor
+
+# Agent factory: try create_tool_calling_agent (1.x) then fallback to openai_tools
+try:
+    from langchain.agents import create_tool_calling_agent as _create_agent
+except ImportError:
+    try:
+        from langchain.agents.tool_calling_agent.base import create_tool_calling_agent as _create_agent
+    except ImportError:
+        try:
+            from langchain.agents import create_openai_tools_agent as _create_agent
+        except ImportError:
+            from langchain.agents.openai_tools.base import create_openai_tools_agent as _create_agent
 
 from agent.icp_agent import ICPAgent
 from agent.email_agent import EmailAgent
@@ -112,7 +129,7 @@ class SupervisorAgent:
 
     def _build_agent(self) -> AgentExecutor:
         """Build the LangChain AgentExecutor with tools."""
-        agent = create_tool_calling_agent(
+        agent = _create_agent(
             llm=self.llm,
             tools=ALL_TOOLS,
             prompt=SUPERVISOR_PROMPT,
