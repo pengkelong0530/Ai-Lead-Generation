@@ -8,7 +8,7 @@ Manages the 6-node pipeline end-to-end:
   5. Multi-Round Email Generation + Self-Reflection (Q3, Phase 6)
   6. Output & Persistence (Q5)
 
-Uses LangChain AgentExecutor for tool-using steps and direct sub-agent
+Uses LangGraph create_react_agent for tool-using steps and direct sub-agent
 invocations for structured LLM tasks.
 """
 
@@ -18,26 +18,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.history import RunnableWithMessageHistory
-
-# Agent executor with broad version compatibility
-try:
-    from langchain.agents import AgentExecutor
-except ImportError:
-    from langchain.agents.agent import AgentExecutor
-
-# Agent factory: try create_tool_calling_agent (1.x) then fallback to openai_tools
-try:
-    from langchain.agents import create_tool_calling_agent as _create_agent
-except ImportError:
-    try:
-        from langchain.agents.tool_calling_agent.base import create_tool_calling_agent as _create_agent
-    except ImportError:
-        try:
-            from langchain.agents import create_openai_tools_agent as _create_agent
-        except ImportError:
-            from langchain.agents.openai_tools.base import create_openai_tools_agent as _create_agent
+from langgraph.prebuilt import create_react_agent
 
 from agent.icp_agent import ICPAgent
 from agent.email_agent import EmailAgent
@@ -50,7 +31,6 @@ from chains.reflection_chain import (
 from config import config
 from db import get_db
 from llm_utils import get_llm
-from memory.mysql_memory import DBChatMessageHistory
 from memory.progress_callback import ProgressCallback
 from models.company import CompanyCreate, CompanyStatus
 from models.score import AgentReasoning
@@ -85,13 +65,6 @@ You operate in a structured pipeline with the following stages:
 - Track which companies have been contacted and their status (Q5).
 - Keep a running summary of all companies found and their development status."""
 
-SUPERVISOR_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", SUPERVISOR_SYSTEM_PROMPT),
-    MessagesPlaceholder(variable_name="history"),
-    ("human", "{input}"),
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
-])
-
 
 # ──────────────────────────────────────────────
 # Supervisor Agent
@@ -110,7 +83,7 @@ class SupervisorAgent:
         self.llm = llm or get_llm()
         self.db = db
         self.callbacks = callbacks or []
-        self._agent: Optional[AgentExecutor] = None
+        self._agent: Any = None
         self._session_id: Optional[str] = None
         self._current_requirement: str = ""
         self._parsed_requirement: dict[str, str] = {}
@@ -127,20 +100,16 @@ class SupervisorAgent:
             self.db.connect()
         return self.db
 
-    def _build_agent(self) -> AgentExecutor:
-        """Build the LangChain AgentExecutor with tools."""
-        agent = _create_agent(
-            llm=self.llm,
+    def _build_agent(self) -> Any:
+        """Build the agent using LangGraph create_react_agent."""
+        from langchain_core.messages import SystemMessage
+
+        agent = create_react_agent(
+            model=self.llm,
             tools=ALL_TOOLS,
-            prompt=SUPERVISOR_PROMPT,
+            system_message=SUPERVISOR_SYSTEM_PROMPT,
         )
-        return AgentExecutor(
-            agent=agent,
-            tools=ALL_TOOLS,
-            verbose=True,
-            handle_parsing_errors=True,
-            max_iterations=15,
-        )
+        return agent
 
     def _get_session_id(self) -> str:
         if self._session_id is None:
@@ -609,25 +578,20 @@ class SupervisorAgent:
 
     # ── Interactive Chat ───────────────────────────
 
-    def get_chat_agent(self) -> RunnableWithMessageHistory:
+    def get_chat_agent(self) -> Any:
         """Get a conversational agent with database memory for interactive use.
 
-        Returns a RunnableWithMessageHistory that can be invoked with:
-            {"input": "用户输入"}
-        and configuration {"configurable": {"session_id": "xxx"}}.
+        Returns a callable that accepts {"input": str} and
+        configuration {"configurable": {"session_id": "xxx"}}.
         """
+        from langchain_core.messages import HumanMessage
+
         agent = self._build_agent()
 
-        def get_history(session_id: str) -> DBChatMessageHistory:
-            db = self._init_db()
-            return DBChatMessageHistory(
-                session_id=session_id,
-                db=db,
-            )
+        def chat_fn(inputs: dict) -> dict:
+            session_id = inputs.get("configurable", {}).get("session_id", "default")
+            user_input = inputs.get("input", "")
+            result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
+            return {"output": result["messages"][-1].content}
 
-        return RunnableWithMessageHistory(
-            runnable=agent,
-            get_session_history=get_history,  # type: ignore[arg-type]
-            input_messages_key="input",
-            history_messages_key="history",
-        )
+        return chat_fn
