@@ -8,7 +8,7 @@ Usage:
 """
 
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from config import config
 
