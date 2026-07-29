@@ -69,15 +69,6 @@ def render_sidebar() -> None:
         st.markdown("### 会话信息")
         st.code(st.session_state.session_id, language="text")
 
-        # Configuration display
-        st.markdown("### 当前配置")
-        st.json({
-            "LLM Model": config.llm.model,
-            "Temperature": config.llm.temperature,
-            "Search Engine": "Tavily" if config.search.api_key else "Demo Only",
-            "MySQL": f"{config.mysql.host}:{config.mysql.port}",
-        })
-
         st.markdown("---")
 
         # Clear chat button
