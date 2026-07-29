@@ -14,6 +14,7 @@ Usage:
 import argparse
 import asyncio
 import sys
+import sys
 
 from config import config
 
@@ -176,10 +177,12 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    # Detect if streamlit is running us
+    # Always import and run Streamlit UI directly.
+    # CLI flags (--demo, --input, --init-db) are handled via argparse in main().
     import os as _os
-    if _os.environ.get("STREAMLIT_SCRIPT_NAME"):
-        # We're in Streamlit process — import and run UI directly
+    # Streamlit Cloud sets this env var; use it as the detection signal.
+    # Fallback: if no CLI args are given, assume Streamlit UI mode.
+    if _os.environ.get("STREAMLIT_SCRIPT_NAME") or len(sys.argv) <= 1:
         from ui.streamlit_app import main as streamlit_main
         streamlit_main()
     else:
