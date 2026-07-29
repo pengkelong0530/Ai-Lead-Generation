@@ -76,8 +76,11 @@ def get_db() -> Any:  # noqa: ANN201
 
 
 # Re-export for backward compatibility
-from db.mysql_manager import MySQLManager  # noqa: F401, E402
-from db.sqlite_manager import SQLiteManager  # noqa: F401, E402, F811
+try:
+    from db.mysql_manager import MySQLManager  # noqa: F401
+except ImportError:
+    pass  # mysql-connector not installed
+from db.sqlite_manager import SQLiteManager  # noqa: F401, F811
 
 __all__ = [
     "get_db",
