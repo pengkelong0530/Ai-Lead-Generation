@@ -14,7 +14,6 @@ invocations for structured LLM tasks.
 
 import json
 import uuid
-from datetime import datetime
 from typing import Any, Optional
 
 from langchain_core.language_models import BaseChatModel
@@ -28,7 +27,6 @@ from chains.reflection_chain import (
     reflect_on_emails,
     ReflectionResult,
 )
-from config import config
 from db import get_db
 from llm_utils import get_llm
 from memory.progress_callback import ProgressCallback
@@ -102,8 +100,6 @@ class SupervisorAgent:
 
     def _build_agent(self) -> Any:
         """Build the agent using LangGraph create_react_agent."""
-        from langchain_core.messages import SystemMessage
-
         agent = create_react_agent(
             model=self.llm,
             tools=ALL_TOOLS,
@@ -388,7 +384,6 @@ class SupervisorAgent:
 
         # Self-reflection on email quality (Phase 6)
         if email_results:
-            first_bundle = email_results[0]["bundle"]
             email_summary = (
                 f"Generated {len(email_results)} sequences for companies: "
                 + ", ".join(r["company"].name for r in email_results)
@@ -430,8 +425,6 @@ class SupervisorAgent:
 
                 saved_count += 1
 
-                # Save score
-                score = assessment["score"]
                 if company_id:
                     db.update_company_status(company_id, CompanyStatus.pending)
 
