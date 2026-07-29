@@ -65,10 +65,6 @@ def render_sidebar() -> None:
             help="启用后将使用模拟数据，无需 API Key",
         )
 
-        # Session info
-        st.markdown("### 会话信息")
-        st.code(st.session_state.session_id, language="text")
-
         st.markdown("---")
 
         # Clear chat button
