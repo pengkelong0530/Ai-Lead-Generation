@@ -6,7 +6,6 @@ backed by the real agent pipeline.
 
 import asyncio
 import uuid
-from typing import Any
 
 import streamlit as st
 import pandas as pd
