@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 海外获客 Agent - Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f8f9fb;--surface:#fff;--border:#e8ecf0;--text:#1a1d23;--text2:#5e6673;--text3:#929aab;
+  --blue:#1a3a7a;--blue-light:#e8edf6;--blue-bg:#f0f4fb;
+  --green:#1a7a3a;--green-bg:#e8f6ed;
+  --amber:#b8860b;--amber-bg:#fdf6e0;
+  --radius:10px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:24px 32px 48px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 24px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.header-left{display:flex;align-items:center;gap:14px}
+.logo{width:40px;height:40px;border-radius:var(--radius);background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+.header h1{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.header .sub{font-size:12px;color:var(--text2);font-weight:400}
+.header-right{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+
+/* Input */
+.input-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:28px;box-shadow:var(--shadow)}
+.input-section label{font-size:13px;font-weight:600;display:block;margin-bottom:8px;color:var(--text)}
+.input-row{display:flex;gap:12px}
+.input-row input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;transition:border-color .2s}
+.input-row input:focus{border-color:var(--blue)}
+.btn{padding:10px 24px;border:none;border-radius:6px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:flex-start;gap:4px;margin-bottom:32px;overflow-x:auto;padding:4px 0}
+.pipe-node{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:110px}
+.pipe-node .circle{width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--text3);transition:all .4s;position:relative}
+.pipe-node .circle.active{background:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-light)}
+.pipe-node .circle.done{background:var(--green);color:#fff}
+.pipe-node .label{font-size:11px;color:var(--text3);margin-top:6px;text-align:center;line-height:1.3;max-width:90px;transition:color .3s}
+.pipe-node .label.active{color:var(--blue);font-weight:600}
+.pipe-node .label.done{color:var(--green)}
+.pipe-connector{flex-shrink:0;width:28px;height:2px;background:var(--border);margin-top:17px;transition:background .4s}
+.pipe-connector.done{background:var(--green)}
+.pipe-connector.active{background:var(--blue)}
+
+/* Tabs */
+.tabs{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:#fff;overflow-x:auto}
+.tab-btn{padding:14px 22px;font-size:13px;font-weight:500;color:var(--text2);background:none;border:none;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text);background:var(--blue-bg)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab-content{display:none;padding:20px 24px}
+.tab-content.active{display:block}
+
+/* Company table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:10px 8px;border-bottom:2px solid var(--border);color:var(--text2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+tbody td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.score-bar{display:inline-flex;align-items:center;gap:8px}
+.score-bar .bar{width:60px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-bar .bar-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .8s}
+.score-bar .bar-fill.high{background:var(--green)}
+.score-bar .bar-fill.mid{background:var(--amber)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+
+/* Score cards */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.score-card{border:1px solid var(--border);border-radius:8px;padding:16px}
+.score-card h4{font-size:14px;font-weight:600;margin-bottom:8px}
+.score-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;color:var(--text2)}
+.score-row .s-label{width:80px;flex-shrink:0;font-size:12px}
+.score-row .s-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-row .s-bar-fill{height:100%;border-radius:3px;background:var(--blue);transition:width 1s}
+.score-row .s-val{width:28px;text-align:right;font-weight:600;font-size:12px;color:var(--text)}
+.score-total{text-align:center;margin-top:10px;font-size:22px;font-weight:700;color:var(--blue)}
+
+/* Emails */
+.email-card{border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.email-header{padding:14px 16px;background:var(--blue-bg);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:500;transition:background .15s}
+.email-header:hover{background:#dce4f2}
+.email-header .day{font-size:11px;color:var(--text2);font-weight:400}
+.email-body{padding:16px;font-size:13px;color:var(--text2);line-height:1.7;display:none;white-space:pre-wrap}
+.email-body.open{display:block}
+.email-arrow{transition:transform .2s}
+.email-arrow.open{transform:rotate(180deg)}
+
+/* Reasoning */
+.log-entry{padding:14px 0;border-bottom:1px solid var(--border)}
+.log-entry:last-child{border-bottom:none}
+.log-entry .log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.log-entry .log-node{font-size:12px;font-weight:600;color:var(--blue)}
+.log-entry .log-conf{font-size:11px;color:var(--text3)}
+.log-entry .log-text{font-size:12px;color:var(--text2);line-height:1.6}
+.log-entry .log-reason{margin-top:6px;padding:8px 10px;background:var(--blue-bg);border-radius:6px;font-size:12px;color:var(--text2);line-height:1.5}
+
+/* Stats bar */
+.stats-bar{display:flex;justify-content:space-around;padding:16px 0;margin-top:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.stat-item{text-align:center}
+.stat-item .num{font-size:20px;font-weight:700;color:var(--blue)}
+.stat-item .lbl{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* Hide empty state */
+.hidden{display:none!important}
+
+/* Responsive */
+@media(max-width:768px){
+  .container{padding:16px}
+  .input-row{flex-direction:column}
+  .pipeline{gap:2px}
+  .pipe-node{width:80px}
+  .pipe-node .label{font-size:10px;max-width:70px}
+  .pipe-connector{width:16px}
+  .score-grid{grid-template-columns:1fr}
+  .tab-btn{padding:12px 14px;font-size:12px}
+  .stats-bar{flex-wrap:wrap;gap:12px}
+  .header h1{font-size:15px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">A</div>
+      <div>
+        <h1>AI 海外获客 Agent</h1>
+        <div class="sub">基于 LangChain 的智能获客演示系统</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="status-dot"></span>
+      <span>Demo 模式</span>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-section">
+    <label>输入开发需求</label>
+    <div class="input-row">
+      <input id="userInput" type="text" value="我要开发德国刀具行业客户" placeholder="例如：我要开发德国刀具行业客户">
+      <button class="btn btn-primary" id="startBtn">开始演示</button>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline" id="pipeline">
+    <div class="pipe-node" data-step="1"><div class="circle">1</div><div class="label">理解需求</div></div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-node" data-step="2"><div class="circle">2</div><div class="label">搜索企业</div></div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-node" data-step="3"><div class="circle">3</div><div class="label">ICP 筛选</div></div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-node" data-step="4"><div class="circle">4</div><div class="label">信息采集</div></div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-node" data-step="5"><div class="circle">5</div><div class="label">生成邮件</div></div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-node" data-step="6"><div class="circle">6</div><div class="label">结果输出</div></div>
+  </div>
+
+  <!-- Status -->
+  <div id="statusMsg" style="text-align:center;font-size:13px;color:var(--text2);margin-bottom:20px;min-height:22px"></div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="companies">客户列表</button>
+      <button class="tab-btn" data-tab="scores">评分详情</button>
+      <button class="tab-btn" data-tab="emails">邮件预览</button>
+      <button class="tab-btn" data-tab="logs">推理日志</button>
+    </div>
+
+    <!-- Tab: Companies -->
+    <div class="tab-content active" id="tab-companies">
+      <table><thead><tr><th style="width:28px">#</th><th>公司名称</th><th>行业</th><th>地区</th><th>匹配度</th><th>状态</th></tr></thead><tbody id="companyBody"></tbody></table>
+      <div id="companyEmpty" style="text-align:center;padding:32px;color:var(--text3);font-size:13px">等待演示执行...</div>
+    </div>
+
+    <!-- Tab: Scores -->
+    <div class="tab-content" id="tab-scores">
+      <div class="score-grid" id="scoreGrid"></div>
+      <div id="scoreEmpty" style="text-align:center;padding:32px;color:var(--text3);font-size:13px">等待演示执行...</div>
+    </div>
+
+    <!-- Tab: Emails -->
+    <div class="tab-content" id="tab-emails">
+      <div id="emailContainer"></div>
+      <div id="emailEmpty" style="text-align:center;padding:32px;color:var(--text3);font-size:13px">等待演示执行...</div>
+    </div>
+
+    <!-- Tab: Logs -->
+    <div class="tab-content" id="tab-logs">
+      <div id="logContainer"></div>
+      <div id="logEmpty" style="text-align:center;padding:32px;color:var(--text3);font-size:13px">等待演示执行...</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-item"><div class="num" id="statSearch">0</div><div class="lbl">搜索企业</div></div>
+    <div class="stat-item"><div class="num" id="statQualified">0</div><div class="lbl">ICP 合格</div></div>
+    <div class="stat-item"><div class="num" id="statEmails">0</div><div class="lbl">邮件序列</div></div>
+    <div class="stat-item"><div class="num" id="statTime">-</div><div class="lbl">执行时间</div></div>
+  </div>
+</div>
+
+<script>
+// ── Mock Data ──────────────────────────────
+const MOCK = {
+  companies: [
+    {name:"Walter AG",industry:"Cutting Tools",region:"Germany",score:92,website:"walter-tools.com",status:"待开发"},
+    {name:"Guhring KG",industry:"Cutting Tools",region:"Germany",score:90,website:"guehring.de",status:"待开发"},
+    {name:"MAPAL Dr. Kress KG",industry:"Cutting Tools",region:"Germany",score:88,website:"mapal.com",status:"待开发"},
+    {name:"EMUGE-Werk Glimpel KG",industry:"Cutting Tools",region:"Germany",score:85,website:"emuge.com",status:"待开发"},
+    {name:"Kennametal Inc.",industry:"Cutting Tools",region:"Germany/Global",score:82,website:"kennametal.com",status:"待开发"},
+  ],
+  scores: [
+    {name:"Walter AG",dims:[{l:"行业匹配",v:95},{l:"规模匹配",v:90},{l:"需求匹配",v:95},{l:"地区优先级",v:90}],total:92},
+    {name:"Guhring KG",dims:[{l:"行业匹配",v:95},{l:"规模匹配",v:90},{l:"需求匹配",v:90},{l:"地区优先级",v:90}],total:90},
+  ],
+  emails: [
+    {day:1,label:"Day 1 - 介绍信",subj:"Enhancing Walter AG's Cutting Tool Performance with Advanced PVD Coatings",
+     body:"Dear Walter AG Team,\n\nI hope this message finds you well. I am reaching out from [Our Company], a specialized manufacturer of advanced PVD/CVD vacuum coating equipment.\n\nGiven Walter AG's position as a global leader in precision cutting tools, we believe our latest generation of PVD coating systems could significantly enhance the performance and lifespan of your tooling products.\n\nOur coating technology has been shown to:\n- Extend tool life by 3-5x through advanced wear-resistant coatings\n- Improve cutting performance and surface finish quality\n- Reduce production downtime through more durable tooling\n\nI would welcome the opportunity to discuss how our coating solutions could support your manufacturing excellence.\n\nBest regards,\n[Your Name]"},
+    {day:3,label:"Day 3 - 案例分享",subj:"Case Study: How a European Tool Manufacturer Improved Tool Life by 4x",
+     body:"Dear Walter AG Team,\n\nFollowing up on my previous email, I wanted to share a relevant success story from our work with a leading European cutting tool manufacturer.\n\nAfter implementing our PVD coating system, they achieved:\n- 4x improvement in tool lifespan\n- 22% increase in cutting speed capability\n- Significant reduction in tool change downtime\n\nThe key differentiator was our advanced multi-layer coating technology, which provides superior adhesion and wear resistance compared to standard single-layer coatings.\n\nWould you be open to a 15-minute technical discussion to explore whether this could deliver similar results for Walter AG?\n\nBest regards,\n[Your Name]"},
+    {day:7,label:"Day 7 - 邀约",subj:"Quick question about Walter AG's coating requirements",
+     body:"Dear Walter AG Team,\n\nI have been researching Walter AG's impressive range of cutting tools, and I am curious about your current approach to PVD coating.\n\nAre you currently managing coating in-house, or working with external coating partners? In either case, our systems are designed to integrate seamlessly into existing production workflows.\n\nI will be at the upcoming EMO Hannover exhibition - would this be a good opportunity to briefly connect and learn more about your requirements?\n\nLooking forward to hearing from you.\n\nBest regards,\n[Your Name]"}
+  ],
+  logs:[
+    {node:"理解需求",conf:"0.92",text:'Parsed: region=Germany, industry=Cutting Tools, product=PVD CVD coating equipment',reason:"Detected region from keyword '德国', industry from keyword '刀具'. High confidence due to clear indicators."},
+    {node:"搜索企业",conf:"0.88",text:"Found 5 companies from search results across 2 sources (tavily, bing)",reason:"Multi-query parallel search: 'Germany cutting tools manufacturers', 'Germany刀具行业'. Walter AG and Guhring KG identified as strong candidates."},
+    {node:"ICP 筛选",conf:"0.85",text:"5/7 companies passed ICP screening (threshold: 50/100)",reason:"Weighted scoring applied: industry*40% + size*25% + demand*25% + region*10%. Top score: Walter AG 92/100."},
+    {node:"信息采集",conf:"0.78",text:"Enriched 5 company profiles with website data",reason:"Scraped company websites and extracted structured information including technology focus and business descriptions."},
+    {node:"生成邮件",conf:"0.82",text:"Generated 3-email sequences for 5 qualified companies",reason:"Sequence strategy: Day 1 introduction, Day 3 case study, Day 7 CTA. Tailored to cutting tool industry."},
+    {node:"结果输出",conf:"0.95",text:"Data persisted to MySQL. Session saved.",reason:"5 companies saved, email sequences generated, reasoning logs recorded."}
+  ]
+};
+
+// ── State ─────────────────────────────────
+let running = false;
+
+// ── DOM refs ──────────────────────────────
+const el = id => document.getElementById(id);
+const startBtn = el('startBtn');
+const userInput = el('userInput');
+const statusMsg = el('statusMsg');
+const companyBody = el('companyBody');
+const companyEmpty = el('companyEmpty');
+const scoreGrid = el('scoreGrid');
+const scoreEmpty = el('scoreEmpty');
+const emailContainer = el('emailContainer');
+const emailEmpty = el('emailEmpty');
+const logContainer = el('logContainer');
+const logEmpty = el('logEmpty');
+
+// ── Pipeline Animation ────────────────────
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+async function setStep(n,state){
+  const nodes = document.querySelectorAll('.pipe-node');
+  const conns = document.querySelectorAll('.pipe-connector');
+  nodes.forEach((nd,i)=>{
+    const num=i+1;
+    nd.querySelector('.circle').className='circle'+(num<n?' done':num==n?' active':'');
+    nd.querySelector('.label').className='label'+(num<n?' done':num==n?' active':'');
+  });
+  conns.forEach((c,i)=>{
+    c.className='pipe-connector'+(i<n-1?' done':i==n-1?' active':'');
+  });
+}
+
+async function runPipeline(){
+  if(running)return;
+  running=true;
+  startBtn.disabled=true;
+  const startTime=Date.now();
+
+  // Reset
+  companyBody.innerHTML='';companyEmpty.classList.remove('hidden');
+  scoreGrid.innerHTML='';scoreEmpty.classList.remove('hidden');
+  emailContainer.innerHTML='';emailEmpty.classList.remove('hidden');
+  logContainer.innerHTML='';logEmpty.classList.remove('hidden');
+  el('statTime').textContent='-';
+  document.querySelectorAll('.pipe-node .circle,.pipe-node .label').forEach(e=>{e.className=e.classList[0]});
+  document.querySelectorAll('.pipe-connector').forEach(e=>e.className='pipe-connector');
+
+  const steps=[
+    {n:1,msg:'Parsing requirement: target=德国刀具行业, product=PVD/CVD coating equipment...'},
+    {n:2,msg:'Searching across platforms (Tavily, Bing) with 4 queries...'},
+    {n:3,msg:'Screening 7 candidates against ICP, computing weighted scores...'},
+    {n:4,msg:'Scraping websites, extracting company profiles and contacts...'},
+    {n:5,msg:'Generating 3-email outreach sequences (Day 1, 3, 7)...'},
+    {n:6,msg:'Persisting results, building final report...'},
+  ];
+
+  for(const s of steps){
+    await setStep(s.n,'active');
+    statusMsg.textContent=s.msg;
+    await sleep(800);
+    await setStep(s.n,'done');
+  }
+
+  statusMsg.textContent='Done. Loaded results below.';
+  const elapsed=((Date.now()-startTime)/1000).toFixed(1);
+  el('statTime').textContent=elapsed+'s';
+
+  // Render data
+  renderCompanies();
+  renderScores();
+  renderEmails();
+  renderLogs();
+  el('statSearch').textContent='7';
+  el('statQualified').textContent='5';
+  el('statEmails').textContent='5';
+
+  running=false;
+  startBtn.disabled=false;
+}
+
+// ── Renderers ─────────────────────────────
+function renderCompanies(){
+  companyEmpty.classList.add('hidden');
+  companyBody.innerHTML=MOCK.companies.map((c,i)=>`
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td><strong style="font-size:13px">${c.name}</strong><br><span style="font-size:11px;color:var(--text3)">${c.website}</span></td>
+      <td>${c.industry}</td>
+      <td>${c.region}</td>
+      <td>
+        <div class="score-bar">
+          <span style="font-weight:600;font-size:13px">${c.score}</span>
+          <div class="bar"><div class="bar-fill ${c.score>=90?'high':c.score>=80?'mid':''}" style="width:${c.score}%"></div></div>
+        </div>
+      </td>
+      <td><span class="badge badge-green">${c.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderScores(){
+  scoreEmpty.classList.add('hidden');
+  scoreGrid.innerHTML=MOCK.scores.map(s=>`
+    <div class="score-card">
+      <h4>${s.name}</h4>
+      ${s.dims.map(d=>`
+        <div class="score-row">
+          <span class="s-label">${d.l}</span>
+          <div class="s-bar"><div class="s-bar-fill" style="width:${d.v}%"></div></div>
+          <span class="s-val">${d.v}</span>
+        </div>
+      `).join('')}
+      <div class="score-total">${s.total}<span style="font-size:12px;font-weight:400;color:var(--text2)">/100</span></div>
+    </div>
+  `).join('');
+}
+
+function renderEmails(){
+  emailEmpty.classList.add('hidden');
+  emailContainer.innerHTML=MOCK.emails.map((e,i)=>`
+    <div class="email-card">
+      <div class="email-header" onclick="toggleEmail(this)">
+        <span>${e.label}</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="day">${e.subj.slice(0,50)}...</span>
+          <span class="email-arrow" style="font-size:12px;color:var(--text3)">&#9660;</span>
+        </span>
+      </div>
+      <div class="email-body" id="emailBody${i}">${e.body}</div>
+    </div>
+  `).join('');
+}
+function toggleEmail(hdr){
+  const body=hdr.nextElementSibling;
+  const arrow=hdr.querySelector('.email-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function renderLogs(){
+  logEmpty.classList.add('hidden');
+  logContainer.innerHTML=MOCK.logs.map(l=>`
+    <div class="log-entry">
+      <div class="log-head">
+        <span class="log-node">Node: ${l.node}</span>
+        <span class="log-conf">confidence: ${l.conf}</span>
+      </div>
+      <div class="log-text">${l.text}</div>
+      <div class="log-reason">${l.reason}</div>
+    </div>
+  `).join('');
+}
+
+// ── Tab switching ─────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    el('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Start button ──────────────────────────
+startBtn.addEventListener('click',runPipeline);
+
+// Auto-run on page load
+window.addEventListener('load',()=>{
+  setTimeout(runPipeline,400);
+});
+</script>
+</body>
+</html>

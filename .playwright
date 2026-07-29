@@ -1,0 +1,2 @@
+# Playwright browsers are not needed on Streamlit Cloud
+# This file tells the buildpack to skip Playwright install
