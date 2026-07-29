@@ -6,31 +6,19 @@ and uses an LLM to extract structured company information.
 
 from typing import Optional
 
-from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
 
-from config import config
+from llm_utils import get_llm
 from models.company import CompanyCreate
 from tools.scrape_tool import WebScraper
 
 # ──────────────────────────────────────────────
-# LLM-powered extraction chain
+# LLM-powered extraction chain (lazy-init)
 # ──────────────────────────────────────────────
 
 
-def _get_llm() -> BaseChatModel:
-    """Get configured LLM instance."""
-    return ChatOpenAI(
-        model=config.llm.model,
-        temperature=config.llm.temperature,
-        api_key=config.llm.openai_api_key,
-    )
-
-
-# Parser that validates output matches CompanyCreate schema
 _COMPANY_PARSER = PydanticOutputParser(pydantic_object=CompanyCreate)
 
 _EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([
@@ -51,7 +39,10 @@ _EXTRACTION_PROMPT = ChatPromptTemplate.from_messages([
     ),
 ])
 
-_EXTRACTION_CHAIN = _EXTRACTION_PROMPT | _get_llm() | _COMPANY_PARSER
+
+def _get_chain():
+    """Build extraction chain lazily so LLM config is ready at call time."""
+    return _EXTRACTION_PROMPT | get_llm() | _COMPANY_PARSER
 
 
 # ──────────────────────────────────────────────
@@ -73,17 +64,16 @@ async def extract_company_info(company_name: str, website_url: str) -> str:
     Returns:
         JSON string with structured company information.
     """
-    # Scrape the website
     homepage = await WebScraper.scrape(website_url)
     about_page = await WebScraper.scrape(f"{website_url.rstrip('/')}/about")
 
-    # Combine content from both pages
     combined_content = f"=== Homepage ===\n{homepage.text_content}\n\n"
     if about_page.success:
         combined_content += f"=== About Page ===\n{about_page.text_content}"
 
     try:
-        company = await _EXTRACTION_CHAIN.ainvoke({
+        chain = _get_chain()
+        company = await chain.ainvoke({
             "company_name": company_name,
             "website_url": website_url,
             "web_content": combined_content[:8000],
@@ -91,7 +81,6 @@ async def extract_company_info(company_name: str, website_url: str) -> str:
         })
         return company.model_dump_json(ensure_ascii=False, indent=2)
     except Exception as e:
-        # Fallback: return basic info without LLM
         result = CompanyCreate(
             name=company_name,
             website=website_url,

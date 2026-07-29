@@ -14,10 +14,8 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSerializable
-from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
-from config import config
 from models.score import CompanyScore, ICPCriteria, ScoreWeights
 
 # ──────────────────────────────────────────────
@@ -117,11 +115,8 @@ class _RawScores(BaseModel):
 
 
 def _get_llm() -> BaseChatModel:
-    return ChatOpenAI(
-        model=config.llm.model,
-        temperature=config.llm.temperature,
-        api_key=config.llm.openai_api_key,
-    )
+    from llm_utils import get_llm as build_llm
+    return build_llm()
 
 
 def _compute_weighted_score(

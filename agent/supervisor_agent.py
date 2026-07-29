@@ -21,7 +21,6 @@ from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_openai import ChatOpenAI
 
 from agent.icp_agent import ICPAgent
 from agent.email_agent import EmailAgent
@@ -33,6 +32,7 @@ from chains.reflection_chain import (
 )
 from config import config
 from db import get_db
+from llm_utils import get_llm
 from memory.mysql_memory import DBChatMessageHistory
 from memory.progress_callback import ProgressCallback
 from models.company import CompanyCreate, CompanyStatus
@@ -90,11 +90,7 @@ class SupervisorAgent:
         llm: Optional[BaseChatModel] = None,
         callbacks: Optional[list[ProgressCallback]] = None,
     ) -> None:
-        self.llm = llm or ChatOpenAI(
-            model=config.llm.model,
-            temperature=config.llm.temperature,
-            api_key=config.llm.openai_api_key,
-        )
+        self.llm = llm or get_llm()
         self.db = db
         self.callbacks = callbacks or []
         self._agent: Optional[AgentExecutor] = None

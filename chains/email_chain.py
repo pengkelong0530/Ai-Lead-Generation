@@ -15,10 +15,8 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSerializable
-from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
-from config import config
 from models.email import EmailSequenceCreate, EmailStatus
 
 # ──────────────────────────────────────────────
@@ -96,11 +94,8 @@ _EMAIL_PROMPT = ChatPromptTemplate.from_messages([
 
 
 def _get_llm() -> BaseChatModel:
-    return ChatOpenAI(
-        model=config.llm.model,
-        temperature=0.4,  # Slightly higher for creative writing
-        api_key=config.llm.openai_api_key,
-    )
+    from llm_utils import get_llm as build_llm
+    return build_llm(temperature=0.4)
 
 
 _EMAIL_PARSER = PydanticOutputParser(pydantic_object=EmailSequenceBundle)
