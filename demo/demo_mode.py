@@ -20,29 +20,56 @@ class DemoMode:
     def is_active(self) -> bool:
         return self.enabled
 
-    def get_companies(self) -> list[dict[str, Any]]:
-        """Get mock companies for demo display."""
-        companies = mock_data.SAMPLE_COMPANIES + mock_data.SAMPLE_COMPANIES_LOW_SCORE
+    @staticmethod
+    def _detect_region(user_input: str) -> str:
+        """Simple region detection from user input."""
+        text = user_input.lower()
+        if "germany" in text or "german" in text or "德国" in text:
+            return "Germany"
+        if "usa" in text or "united states" in text or "american" in text or "美国" in text:
+            return "USA"
+        if "japan" in text or "japanese" in text or "日本" in text:
+            return "Japan"
+        if "china" in text or "chinese" in text or "中国" in text:
+            return "China"
+        return ""
+
+    def get_companies(self, region: str = "") -> list[dict[str, Any]]:
+        """Get mock companies for demo display, optionally filtered by region."""
+        # Build comprehensive list: first add high-scoring companies, then low-scoring
+        all_companies = mock_data.SAMPLE_COMPANIES + mock_data.SAMPLE_COMPANIES_USA + mock_data.SAMPLE_COMPANIES_LOW_SCORE
+        if region:
+            all_companies = [c for c in all_companies if c.region and region.lower() in c.region.lower()]
+        return [c.model_dump() for c in all_companies]
+
+    def get_qualified_companies(self, region: str = "") -> list[dict[str, Any]]:
+        """Get only qualified mock companies, filtered by region."""
+        companies = mock_data.SAMPLE_COMPANIES + mock_data.SAMPLE_COMPANIES_USA
+        if region:
+            companies = [c for c in companies if c.region and region.lower() in c.region.lower()]
         return [c.model_dump() for c in companies]
 
-    def get_qualified_companies(self) -> list[dict[str, Any]]:
-        """Get only qualified mock companies."""
-        return [
-            c.model_dump() for c in mock_data.SAMPLE_COMPANIES
-        ]
-
-    def get_summary_report(self) -> str:
+    def get_summary_report(self, region: str = "") -> str:
         """Generate a demo summary report."""
+        qualified = mock_data.SAMPLE_COMPANIES + mock_data.SAMPLE_COMPANIES_USA
+        if region:
+            qualified = [c for c in qualified if c.region and region.lower() in c.region.lower()]
+        all_search = mock_data.SAMPLE_COMPANIES + mock_data.SAMPLE_COMPANIES_USA + mock_data.SAMPLE_COMPANIES_LOW_SCORE
+        if region:
+            all_search = [c for c in all_search if c.region and region.lower() in c.region.lower()]
+
+        target_industry = "Cutting Tools"
+        target_region = region or "Global"
         lines = [
             "=" * 60,
             "📊 AI 海外获客 Agent — 演示执行报告",
             "=" * 60,
-            "需求: 我要开发德国刀具行业客户",
-            "目标行业: Cutting Tools",
-            "目标地区: Germany",
+            f"需求: {getattr(self, '_last_input', '我要开发{region}刀具行业客户')}",
+            f"目标行业: {target_industry}",
+            f"目标地区: {target_region}",
             "模式: 🎯 Demo Mode (模拟数据)\n",
-            f"搜索候选企业: {len(mock_data.SAMPLE_COMPANIES + mock_data.SAMPLE_COMPANIES_LOW_SCORE)} 家",
-            f"ICP 筛选合格: {len(mock_data.SAMPLE_COMPANIES)} 家\n",
+            f"搜索候选企业: {len(all_search)} 家",
+            f"ICP 筛选合格: {len(qualified)} 家\n",
             "--- 合格客户列表 (按评分排序) ---",
         ]
 

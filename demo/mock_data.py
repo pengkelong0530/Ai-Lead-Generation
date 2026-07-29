@@ -90,6 +90,79 @@ SAMPLE_COMPANIES = [
     ),
 ]
 
+SAMPLE_COMPANIES_USA = [
+    CompanyCreate(
+        name="Kennametal Inc.",
+        industry="Cutting Tools",
+        region="USA",
+        website="https://www.kennametal.com",
+        description="Global leader in metal cutting tools, tooling systems, and wear-resistant "
+                    "solutions. Extensive PVD/CVD coating capabilities for tooling applications.",
+        employee_count="10000+",
+        technology_focus="PVD/CVD coating, wear materials, metal cutting",
+        score=92,
+        source="tavily",
+        confidence=0.95,
+        status=CompanyStatus.pending,
+    ),
+    CompanyCreate(
+        name="Sandvik Coromant USA",
+        industry="Cutting Tools",
+        region="USA",
+        website="https://www.sandvik.coromant.com",
+        description="World-leading supplier of tools, tooling solutions and know-how for the "
+                    "metalworking industry. Advanced coated carbide tools for automotive and aerospace.",
+        employee_count="5000+",
+        technology_focus="CVD/PVD coated carbide, insert technology",
+        score=90,
+        source="tavily",
+        confidence=0.93,
+        status=CompanyStatus.pending,
+    ),
+    CompanyCreate(
+        name="MSC Industrial Supply",
+        industry="Cutting Tools",
+        region="USA",
+        website="https://www.mscdirect.com",
+        description="North American distributor of metalworking and MRO supplies, serving "
+                    "manufacturers across the US with cutting tools and industrial equipment.",
+        employee_count="5000+",
+        technology_focus="Industrial distribution, cutting tools, surface treatment",
+        score=80,
+        source="bing",
+        confidence=0.82,
+        status=CompanyStatus.pending,
+    ),
+    CompanyCreate(
+        name="Kyocera SGS Precision Tools",
+        industry="Cutting Tools",
+        region="USA",
+        website="https://www.kyocera-sgstool.com",
+        description="US-based manufacturer of high-performance solid carbide end mills, "
+                    "drills, and micro tools with advanced PVD coating technologies.",
+        employee_count="200-500",
+        technology_focus="PVD coating, solid carbide, micro tools",
+        score=85,
+        source="tavily",
+        confidence=0.88,
+        status=CompanyStatus.pending,
+    ),
+    CompanyCreate(
+        name="Fullerton Tool Company",
+        industry="Cutting Tools",
+        region="USA",
+        website="https://www.fullertontool.com",
+        description="American manufacturer of high-quality solid carbide cutting tools "
+                    "for aerospace, automotive, and medical industries. Offers coated tool solutions.",
+        employee_count="100-250",
+        technology_focus="Solid carbide, PVD coating, custom tooling",
+        score=78,
+        source="bing",
+        confidence=0.80,
+        status=CompanyStatus.pending,
+    ),
+]
+
 SAMPLE_COMPANIES_LOW_SCORE = [
     CompanyCreate(
         name="Bosch GmbH",

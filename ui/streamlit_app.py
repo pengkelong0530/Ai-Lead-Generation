@@ -140,8 +140,10 @@ def main() -> None:
                 from demo.demo_mode import DemoMode
                 from demo.mock_data import SAMPLE_SCORES, SAMPLE_EMAILS
                 demo = DemoMode(enabled=True)
+                demo._last_input = inp
+                region = demo._detect_region(inp)
                 st.session_state.results = {
-                    "companies": demo.get_qualified_companies(),
+                    "companies": demo.get_qualified_companies(region=region),
                     "scores": [s.model_dump() for s in SAMPLE_SCORES.values()],
                     "emails": [{"company_name": "Walter AG", "emails": [e.model_dump() for e in SAMPLE_EMAILS.get("Walter AG", [])]}],
                     "logs": demo.get_reasoning_logs(),

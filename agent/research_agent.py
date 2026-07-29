@@ -50,19 +50,19 @@ class ResearchAgent:
 
         user_lower = user_input.lower()
 
-        # Region extraction
+        # Region extraction (English + Chinese keywords)
         region_keywords = {
-            "germany": "Germany", "german": "Germany",
-            "japan": "Japan", "japanese": "Japan",
-            "china": "China", "chinese": "China",
-            "usa": "USA", "united states": "USA", "american": "USA",
-            "korea": "South Korea", "south korea": "South Korea",
-            "taiwan": "Taiwan",
-            "india": "India",
-            "italy": "Italy",
-            "france": "France",
-            "uk": "UK", "united kingdom": "UK",
-            "europe": "Europe", "european": "Europe",
+            "germany": "Germany", "german": "Germany", "德国": "Germany",
+            "japan": "Japan", "japanese": "Japan", "日本": "Japan",
+            "china": "China", "chinese": "China", "中国": "China",
+            "usa": "USA", "united states": "USA", "american": "USA", "美国": "USA",
+            "korea": "South Korea", "south korea": "South Korea", "韩国": "South Korea",
+            "taiwan": "Taiwan", "台湾": "Taiwan",
+            "india": "India", "印度": "India",
+            "italy": "Italy", "意大利": "Italy",
+            "france": "France", "法国": "France",
+            "uk": "UK", "united kingdom": "UK", "英国": "UK",
+            "europe": "Europe", "european": "Europe", "欧洲": "Europe",
         }
         for kw, region in region_keywords.items():
             if kw in user_lower:
