@@ -17,7 +17,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Optional
 
-from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
@@ -112,7 +112,7 @@ class SupervisorAgent:
 
     def _build_agent(self) -> AgentExecutor:
         """Build the LangChain AgentExecutor with tools."""
-        agent = create_openai_tools_agent(
+        agent = create_tool_calling_agent(
             llm=self.llm,
             tools=ALL_TOOLS,
             prompt=SUPERVISOR_PROMPT,
