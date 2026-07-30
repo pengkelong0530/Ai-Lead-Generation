@@ -16,7 +16,7 @@ import asyncio
 import sys
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args():
     parser = argparse.ArgumentParser(
         description="AI Lead Generation Agent for overseas customer development",
     )
@@ -90,10 +90,11 @@ async def run_cli(user_input: str, min_score: int) -> None:
     """Run the full pipeline and print results to console."""
     from agent.supervisor_agent import SupervisorAgent
 
-    print(f"\n🔍 AI Lead Generation Agent")
-    print(f"{'=' * 60}")
+    print("\n" + "=" * 60)
+    print("AI Lead Generation Agent")
+    print("=" * 60)
     print(f"Input: {user_input}")
-    print(f"{'=' * 60}\n")
+    print("=" * 60 + "\n")
 
     agent = SupervisorAgent()
     result = await agent.run_pipeline(
@@ -109,10 +110,11 @@ def run_demo(user_input: str) -> None:
     """Run demo mode using mock data."""
     from demo.demo_mode import DemoMode
 
-    print(f"\n🎯 AI Lead Generation Agent — DEMO MODE")
-    print(f"{'=' * 60}")
+    print("\n" + "=" * 60)
+    print("AI Lead Generation Agent - DEMO MODE")
+    print("=" * 60)
     print(f"Input: {user_input}")
-    print(f"{'=' * 60}\n")
+    print("=" * 60 + "\n")
 
     demo = DemoMode(enabled=True)
     report = demo.get_summary_report()
