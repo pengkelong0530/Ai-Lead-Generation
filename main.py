@@ -175,9 +175,10 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    # Detect Streamlit Cloud / streamlit run
-    if "STREAMLIT_SCRIPT_NAME" in os.environ or sys.argv[0].endswith("streamlit"):
+    # With CLI args (--input, --demo, --init-db) → run async pipeline
+    if len(sys.argv) > 1:
+        asyncio.run(main())
+    else:
+        # No CLI args → always run Streamlit UI
         from ui.streamlit_app import main as streamlit_main
         streamlit_main()
-    else:
-        asyncio.run(main())
