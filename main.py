@@ -13,7 +13,6 @@ Usage:
 
 import argparse
 import asyncio
-import os
 import sys
 
 
@@ -61,10 +60,9 @@ def init_database() -> None:
 
     if "MySQL" in type(db).__name__:
         # Run schema.sql for MySQL
-        import os
-        schema_path = os.path.join(os.path.dirname(__file__), "db", "schema.sql")
-        with open(schema_path, "r", encoding="utf-8") as f:
-            statements = f.read()
+        from pathlib import Path
+        schema_path = Path(__file__).resolve().parent / "db" / "schema.sql"
+        statements = schema_path.read_text(encoding="utf-8")
         for statement in statements.split(";"):
             stmt = statement.strip()
             if stmt:
@@ -124,46 +122,22 @@ def run_demo(user_input: str) -> None:
     print(demo.get_email_preview("Walter AG"))
 
 
-def run_streamlit() -> None:
-    """Launch Streamlit UI."""
-    import subprocess
-    import sys as _sys
-
-    ui_path = __file__
-    cmd = [_sys.executable, "-m", "streamlit", "run", ui_path, "--", "--mode", "ui"]
-    print(f"Launching Streamlit UI...")
-    subprocess.run(cmd)
-
-
 async def main() -> None:
     args = parse_args()
 
-    # Handle --init-db separately
     if args.init_db:
         init_database()
         return
 
-    # Handle --demo
     if args.demo:
         demo_input = args.input or "我要开发德国刀具行业客户"
         run_demo(demo_input)
         return
 
-    # Handle --input (one-shot CLI)
     if args.input:
         await run_cli(args.input, args.min_score)
         return
 
-    # Default: check if we should launch Streamlit
-    # When run as `streamlit run main.py`, streamlit sets an env var
-    import os as _os
-    if _os.environ.get("STREAMLIT_RUN") or _os.environ.get("STREAMLIT_RUN_WITH_STREAMLIT"):
-        # Streamlit is handling this — import and run the UI module
-        from ui.streamlit_app import main as streamlit_main
-        streamlit_main()
-        return
-
-    # Otherwise print help
     print(
         "AI Lead Generation Agent\n\n"
         "Commands:\n"
@@ -175,10 +149,10 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    # With CLI args (--input, --demo, --init-db) → run async pipeline
-    if len(sys.argv) > 1:
+    # Streamlit run adds its own args; CLI args from user start with --
+    is_cli = any(arg.startswith("--") for arg in sys.argv[1:])
+    if is_cli:
         asyncio.run(main())
     else:
-        # No CLI args → always run Streamlit UI
         from ui.streamlit_app import main as streamlit_main
         streamlit_main()
