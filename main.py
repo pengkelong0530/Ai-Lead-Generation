@@ -124,7 +124,7 @@ def run_demo(user_input: str) -> None:
     print(demo.get_email_preview("Walter AG"))
 
 
-async def main() -> None:
+async def cli_main() -> None:
     args = parse_args()
 
     if args.init_db:
@@ -151,10 +151,9 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    # Streamlit run adds its own args; CLI args from user start with --
     is_cli = any(arg.startswith("--") for arg in sys.argv[1:])
     if is_cli:
-        asyncio.run(main())
+        asyncio.run(cli_main())
     else:
         from ui.streamlit_app import main as streamlit_main
         streamlit_main()
