@@ -8,7 +8,6 @@ import asyncio
 import uuid
 
 import streamlit as st
-import pandas as pd
 from config import config
 
 st.set_page_config(page_title="AI 海外获客 Agent", page_icon="A", layout="centered", initial_sidebar_state="expanded")
@@ -104,17 +103,23 @@ def main() -> None:
         tab1, tab2, tab3, tab4 = st.tabs(["客户列表", "评分详情", "邮件预览", "推理日志"])
         with tab1:
             if comps:
-                st.dataframe(
-                    pd.DataFrame([{
-                        "公司名称": c.get("name",""),
-                        "行业": c.get("industry",""),
-                        "地区": c.get("region",""),
-                        "匹配度": c.get("score",0),
-                        "网站": c.get("website","") or "",
-                    } for c in comps]),
-                    use_container_width=True, hide_index=True,
-                    column_config={"网站": st.column_config.LinkColumn("网站")},
-                )
+                rows = ""
+                for c in comps:
+                    site = c.get("website","") or ""
+                    link = f'<a href="{site}" target="_blank">{site}</a>' if site else "-"
+                    rows += f"<tr><td>{c.get('name','')}</td><td>{c.get('industry','')}</td><td>{c.get('region','')}</td><td>{c.get('score',0)}</td><td>{link}</td></tr>"
+                st.markdown("""
+                <style>
+                .ctable {width:100%;border-collapse:collapse;font-size:13px}
+                .ctable th {text-align:left;padding:10px 8px;border-bottom:2px solid #e8ecf0;color:#5e6673;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+                .ctable td {padding:10px 8px;border-bottom:1px solid #e8ecf0;vertical-align:middle}
+                .ctable a {color:#1a3a7a;text-decoration:none}
+                .ctable a:hover {text-decoration:underline}
+                </style>
+                <table class="ctable"><thead><tr><th>公司名称</th><th>行业</th><th>地区</th><th>匹配度</th><th>网站</th></tr></thead><tbody>"""
+                + rows
+                + "</tbody></table>",
+                unsafe_allow_html=True)
         with tab2:
             if scores:
                 cols = st.columns(2)
