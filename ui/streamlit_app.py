@@ -21,8 +21,8 @@ def main() -> None:
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     *{font-family:'Inter',sans-serif}
-    .block-container{padding-top:0!important;max-width:1000px!important;margin-top:-3rem!important}
-    .stAppHeader, .stAppDeployButton, #MainMenu, header {display:none!important}
+    .block-container{padding-top:0.5rem!important;max-width:1000px!important}
+    .stAppHeader, .stAppDeployButton, #MainMenu {display:none!important}
     .header-row{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 0 1rem;border-bottom:1px solid #e8ecf0;margin-bottom:1.5rem}
     .header-left{display:flex;align-items:center;gap:14px}
     .logo-box{width:40px;height:40px;border-radius:10px;background:#1a3a7a;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
