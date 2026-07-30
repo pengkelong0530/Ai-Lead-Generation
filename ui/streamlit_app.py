@@ -104,7 +104,17 @@ def main() -> None:
         tab1, tab2, tab3, tab4 = st.tabs(["客户列表", "评分详情", "邮件预览", "推理日志"])
         with tab1:
             if comps:
-                st.dataframe(pd.DataFrame([{"公司名称":c.get("name",""),"行业":c.get("industry",""),"地区":c.get("region",""),"匹配度":c.get("score",0)} for c in comps]), use_container_width=True, hide_index=True)
+                st.dataframe(
+                    pd.DataFrame([{
+                        "公司名称": c.get("name",""),
+                        "行业": c.get("industry",""),
+                        "地区": c.get("region",""),
+                        "匹配度": c.get("score",0),
+                        "网站": c.get("website","") or "",
+                    } for c in comps]),
+                    use_container_width=True, hide_index=True,
+                    column_config={"网站": st.column_config.LinkColumn("网站")},
+                )
         with tab2:
             if scores:
                 cols = st.columns(2)
