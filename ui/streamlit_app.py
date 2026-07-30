@@ -50,6 +50,7 @@ def main() -> None:
     .s-bar-fill{height:100%;border-radius:3px;background:#1a3a7a}
     .s-val{width:28px;text-align:right;font-weight:600;font-size:12px;color:#1a1d23}
     .score-total{text-align:center;margin-top:10px;font-size:22px;font-weight:700;color:#1a3a7a}
+    [data-testid="stSidebarContent"] > div:first-child {padding-top:0!important;margin-top:-0.5rem!important}
     </style>
     """, unsafe_allow_html=True)
 
